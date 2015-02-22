@@ -279,9 +279,36 @@ angular.module('distributedMd5App')
           $scope.search.maxLength = $scope.search.maxLengthDefault;
 
           $scope.joinPool();
+
+          noty({
+              layout: 'topRight',
+              type: 'success',
+              theme: 'bootstrapTheme',
+              text: 'Successfully added hash to queue!',
+              timeout: 5000,
+              animation: {
+                  open: 'animated bounceInRight', // Animate.css class names
+                  close: 'animated bounceOutRight', // Animate.css class names
+                  easing: 'swing', // unavailable - no need
+                  speed: 500 // unavailable - no need
+              }
+          });
         })
         .error(function(data, status, headers, config) {
-          console.log('Error');
+          noty({
+              layout: 'topRight',
+              type: 'error',
+              theme: 'bootstrapTheme',
+              text: 'Could not add hash, verify that it is a MD5 hash!',
+              timeout: 5000,
+              buttons: false,
+              animation: {
+                  open: 'animated bounceInRight', // Animate.css class names
+                  close: 'animated bounceOutRight', // Animate.css class names
+                  easing: 'swing', // unavailable - no need
+                  speed: 500 // unavailable - no need
+              }
+          });
         });
     }
 

@@ -121,23 +121,21 @@ function onDeliverWork(socket, socketio, data, callback) {
   // same hash is being cracked - this gives us the possibility to redistribute
   // blocks where the client left before transmitting his block.
   Calculation.findById(data.calculation._id, function (err, result) {
-    //if (err) { return handleError(res, err); }
     if(!result) {
-      console.log(err);
+      console.log(socket.id, '- submitted legacy chunk.');
     }
-    data.calculation.processed = true;
-    data.calculation.processing = false;
+    else {
+      data.calculation.processed = true;
+      data.calculation.processing = false;
 
-    var updated = _.merge(result, data.calculation);
-    updated.save(function (err) {
-      end = new Date().getTime();
-      var delta = end-start;
-      console.log('processed block in:', delta);
-      if(callback) {
-        callback();
-      }
-    });
+      var updated = _.merge(result, data.calculation);
+      updated.save();
+    }
   });
+
+  if(callback) {
+    callback();
+  }
 }
 
 function onJoinPool(socket, socketio) {
@@ -259,10 +257,7 @@ function onGetWork(socket) {
   checkWork(function() {
     distributeCalculation(socket, function(calculation){
       if(calculation) {
-        end = new Date().getTime();
-        var delta = end - start;
-
-        console.log(socket.id, '- got new chunk:', calculation.calculation._id, delta);
+        console.log(socket.id, '- got new chunk:', calculation.calculation._id);
         socket.emit('work', calculation);
       }
       else {
