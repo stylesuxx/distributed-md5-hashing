@@ -197,7 +197,7 @@ angular.module('distributedMd5App')
       $scope.work.found = false;
       $scope.work.solution = null;
 
-      $scope.work_2(data.length, 50, data.alphabet.split(""), string, function(work) {
+      $scope.work_2(data.length, 500, data.alphabet.split(""), string, function(work) {
         var end = new Date().getTime();
         var delta = end - start;
 
@@ -228,7 +228,9 @@ angular.module('distributedMd5App')
         }
         else {
           if($scope.joined) {
+            $scope.end = new Date().getTime();
             socket.socket.emit('deliverWork', item, function() {
+              // This takes some time to deliver,....
               $scope.end = new Date().getTime();
               var delta = $scope.end - $scope.start;
               console.log('transmission took:', delta, 'ms', $scope.end);
@@ -244,6 +246,7 @@ angular.module('distributedMd5App')
       if(!$scope.joined || !$scope.processing) {
         $scope.joined = true;
         socket.socket.emit('joinPool');
+        $scope.start = new Date().getTime();
 
         $interval(function() {
           if($scope.joined && !$scope.processing) {

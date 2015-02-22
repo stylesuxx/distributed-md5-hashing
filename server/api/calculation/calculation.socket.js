@@ -6,30 +6,36 @@
 //var alphabet = ['1', '2', '3','4'];
 //var searchHash = "81dc9bdb52d04dc20036dbd8313ed055"; // 1234
 
-var currentSearch = null;
-
 var _ = require('lodash');
 
-var bignum = require('bignum');
-var Words = require("../../../libraries/words/words.js");
+var Words = require("../../libraries/words/words.js");
 var Calculation = require('./calculation.model');
 
 var SearchController = require('../search/search.controller.js');
 var SearchSocket = require('../search/search.socket.js');
 
 // Main config
+var currentSearch = null;
 var step = 100000;
 var words = null;
 var nth = 1;
 var working = [];
-var foundWord = true;
 
+// For measuring execution time
 var start;
 var end;
 
-exports.register = function(socket, socketio) {
-  socket.emit('workingClients', {'workingClients': working.length});
+var removeAllCalculations = function(callback) {
+  Calculation.remove(callback);
+}
 
+removeAllCalculations(function() {
+  console.log('Removed all calculations.');
+});
+
+var hashFound = function() {}
+
+var registerHandlers = function(socket, socketio) {
   Calculation.schema.post('save', function (doc) {
     onSave(socket, doc);
   });
@@ -58,6 +64,11 @@ exports.register = function(socket, socketio) {
   socket.on('disconnect', function() {
     onLeavePool(socket, socketio);
   });
+}
+
+exports.register = function(socket, socketio) {
+  registerHandlers(socket, socketio);
+  socket.emit('workingClients', {'workingClients': working.length});
 }
 
 function onLeavePool(socket, socketio) {
@@ -89,6 +100,7 @@ function onLeavePool(socket, socketio) {
 }
 
 function onDeliverWork(socket, socketio, data, callback) {
+  start = new Date().getTime();
   console.log(socket.id, '- delivered chunk:', data.calculation._id);
   if(data.found) {
     console.log(socket.id, '- found the solution:', data.solution);
@@ -99,7 +111,9 @@ function onDeliverWork(socket, socketio, data, callback) {
     currentSearch.solution = data.solution;
     SearchController.updateSearch(currentSearch, function() {
       currentSearch = null;
-      SearchSocket.sendSearchStatsUpdate(socketio);
+      removeAllCalculations(function() {
+        SearchSocket.sendSearchStatsUpdate(socketio);
+      });
     });
   }
 
@@ -116,6 +130,9 @@ function onDeliverWork(socket, socketio, data, callback) {
 
     var updated = _.merge(result, data.calculation);
     updated.save(function (err) {
+      end = new Date().getTime();
+      var delta = end-start;
+      console.log('processed block in:', delta);
       if(callback) {
         callback();
       }
@@ -237,7 +254,10 @@ function onGetWork(socket) {
   checkWork(function() {
     distributeCalculation(socket, function(calculation){
       if(calculation) {
-        console.log(socket.id, '- got new chunk:', calculation.calculation._id);
+        end = new Date().getTime();
+        var delta = end - start;
+
+        console.log(socket.id, '- got new chunk:', calculation.calculation._id, delta);
         socket.emit('work', calculation);
       }
       else {
