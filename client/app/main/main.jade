@@ -1,0 +1,110 @@
+div(ng-include='"components/navbar/navbar.html"')
+
+header#banner.hero-unit
+  .container
+    form.form-horizontal
+      .row.form-group
+        label.control-label(for="hash").col-sm-2 MD5 Hash
+        .col-sm-6
+          input.form-control(type="text" name="hash" ng-model="search.hash")
+
+        label.control-label(for="maxLength").col-sm-2 maximum word length
+        .col-sm-2
+          input.form-control(type="number" name="maxLength" ng-model="search.maxLength")
+
+      .row.form-group
+        label.control-label(for="alphabet").col-sm-2 Alphabet
+        .col-sm-10
+          input.form-control(ng-model="search.alphabet" type="text" name="alphabet")
+
+      .row
+        .col-sm-12
+          button.btn.btn-default.pull-right(type="submit" ng-click="addSearch()") Add to Queue
+
+.container
+  .row
+    .col-lg-12
+      h1 Distributed MD5 hashing
+
+  .row
+    .col-lg-3
+      strong.
+        Clients working / connected
+
+    .col-lg-9
+      strong {{clients.working}}
+      |  / {{clients.connected}}
+
+  .row(ng-show="processing" ng-class="ng-hide")
+    .col-lg-3
+      strong.
+        Cracking hash
+
+    .col-lg-9
+      strong {{work.search}}
+      |  ({{calculation.alphabet}})
+
+  .row(ng-show="joined" ng-class="ng-hide")
+    .col-lg-3
+      strong.
+        Status
+
+    .col-lg-9
+      .calculating(ng-show="!transmitting && processing" ng-class="ng-hide")
+        | Calculating hash for
+        strong  {{work.currentWord}}
+
+      .transmitting(ng-show="transmitting && processing" ng-class="ng-hide")
+        .text.
+          Transmitting to server
+
+        .found(ng-show="work.found" ng-class="ng-hide")
+          | Found matching hash for
+          strong {{work.currentWord}}
+
+      .waiting(ng-show="joined && !processing" ng-class="ng-hide").
+        Waiting for work...
+
+  .row(ng-show="processing" ng-class="ng-hide")
+    .col-lg-3
+      strong.
+        Block Progress
+
+    .col-lg-9
+      div.progress
+        div.progress-bar(role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: {{work.progress}}%; min-width: 4em").
+          {{work.progress}}%
+
+  .row
+    form.col-lg-12
+      .input-group.pull-right
+        button.btn.btn-primary(type='submit', ng-click='joinPool()' ng-hide="joined" class="ng-hide") Join Hashing Pool
+        button.btn.btn-primary(type='submit', ng-click='leavePool()' ng-show="joined" class="ng-hide") Leave Hashing Pool
+
+  .row
+    .col-lg-6
+      h3 Queue
+      ul
+        li(ng-repeat="(key, value) in searchStats.next")
+          div
+            strong {{value.hash}}
+            |  ({{value.alphabet}})
+
+    .col-lg-6
+      h3 Last found
+      ul
+        li(ng-repeat="(key, value) in searchStats.last")
+          div
+            | md5(
+            strong {{value.solution}}
+            | )
+            |  = {{value.hash}}
+
+footer.footer
+  .container
+    p
+      | Distributed MD5 cracking
+      = ' | '
+      a(href='https://twitter.com/stylesuxx') @stylesuxx
+      = ' | '
+      a(href='https://github.com/DaftMonk/generator-angular-fullstack/issues?state=open') Issues
