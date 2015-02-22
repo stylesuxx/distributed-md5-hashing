@@ -152,17 +152,22 @@ function onJoinPool(socket, socketio) {
 function checkWork(callback) {
   if(!currentSearch) {
     SearchController.getSearch(function(search) {
-      if(search.err) {
-        console.log(search.err);
+      if(search) {
+        if(search.err) {
+          console.log(search.err);
 
-        callback();
+          callback();
+        }
+        else {
+          // Reset all state related variables
+          currentSearch = search;
+          nth = 1;
+          words = new Words.Words(search.alphabet.split(""));
+
+          callback();
+        }
       }
       else {
-        // Reset all state related variables
-        currentSearch = search;
-        nth = 1;
-        words = new Words.Words(search.alphabet.split(""));
-
         callback();
       }
     });
