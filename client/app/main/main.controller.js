@@ -145,7 +145,7 @@ angular.module('distributedMd5App')
           joined = word.join("");
 
           // Update the progress bar every update items
-          if((index % Math.ceil(limit/update)) == 0 || index + 1 == limit) {
+          if((index % Math.ceil(update)) == 0 || index + 1 == limit) {
             $scope.work.currentWord = joined;
             $scope.work.progress = Math.ceil((index / limit) * 100);
             $scope.$apply();
@@ -197,7 +197,7 @@ angular.module('distributedMd5App')
       $scope.work.found = false;
       $scope.work.solution = null;
 
-      $scope.work_2(data.length, 500, data.alphabet.split(""), string, function(work) {
+      $scope.work_2(data.length, 5000, data.alphabet.split(""), string, function(work) {
         var end = new Date().getTime();
         var delta = end - start;
 
