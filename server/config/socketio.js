@@ -26,7 +26,6 @@ function onConnect(socket, socketio) {
   // Insert sockets below
   require('../api/search/search.socket').register(socket);
   require('../api/calculation/calculation.socket').register(socket, socketio);
-  require('../api/thing/thing.socket').register(socket);
 }
 
 module.exports = function (socketio) {

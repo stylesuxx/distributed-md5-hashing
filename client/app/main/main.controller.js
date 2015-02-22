@@ -56,7 +56,6 @@ var increaseString = function(string, alphabet) {
 
 angular.module('distributedMd5App')
   .controller('MainCtrl', function ($scope, $timeout, $interval, $http, socket) {
-    $scope.awesomeThings = [];
     $scope.joined = false;
     $scope.processing = false;
 
@@ -120,11 +119,6 @@ angular.module('distributedMd5App')
       var delta = $scope.end - $scope.start;
       console.log('Received work', data, '(transmission took:', delta, 'ms)');
       $scope.processWork(data.calculation);
-    });
-
-    $http.get('/api/things').success(function(awesomeThings) {
-      $scope.awesomeThings = awesomeThings;
-      socket.syncUpdates('thing', $scope.awesomeThings);
     });
 
     $scope.work_2 = function(limit, update, alphabet, word, callback) {
@@ -288,11 +282,7 @@ angular.module('distributedMd5App')
         });
     }
 
-    $scope.deleteThing = function(thing) {
-      $http.delete('/api/things/' + thing._id);
-    };
-
     $scope.$on('$destroy', function () {
-      socket.unsyncUpdates('thing');
+
     });
   });
