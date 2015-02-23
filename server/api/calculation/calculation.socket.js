@@ -3,14 +3,14 @@
  */
 
 'use strict';
-//var alphabet = ['1', '2', '3','4'];
-//var searchHash = "81dc9bdb52d04dc20036dbd8313ed055"; // 1234
 
 var _ = require('lodash');
+var bignum = require('bignum');
 
 var Words = require("../../libraries/words/words.js");
 var Calculation = require('./calculation.model');
 
+var SearchModel = require('../search/search.model.js');
 var SearchController = require('../search/search.controller.js');
 var SearchSocket = require('../search/search.socket.js');
 
@@ -18,7 +18,6 @@ var SearchSocket = require('../search/search.socket.js');
 var currentSearch = null;
 var step = 100000;
 var words = null;
-var nth = 1;
 var working = [];
 
 // For measuring execution time
@@ -28,10 +27,6 @@ var end;
 var removeAllCalculations = function(callback) {
   Calculation.remove(callback);
 }
-
-removeAllCalculations(function() {
-  console.log('Removed all calculations.');
-});
 
 var hashFound = function() {}
 
@@ -74,9 +69,7 @@ exports.register = function(socket, socketio) {
 function onLeavePool(socket, socketio) {
   var  index = working.indexOf(socket.id);
   if(index > -1) {
-    // TODO: update all calculations for the user
     var where = {
-      'processed': false,
       'processing': true,
       'session': socket.id
     };
@@ -116,28 +109,14 @@ function onDeliverWork(socket, socketio, data, callback) {
       });
     });
   }
-
-  // We update the calculation this is important for as long as the
-  // same hash is being cracked - this gives us the possibility to redistribute
-  // blocks where the client left before transmitting his block.
-  Calculation.findById(data.calculation._id, function (err, result) {
-    //if (err) { return handleError(res, err); }
-    if(!result) {
-      console.log(err);
-    }
-    data.calculation.processed = true;
-    data.calculation.processing = false;
-
-    var updated = _.merge(result, data.calculation);
-    updated.save(function (err) {
-      end = new Date().getTime();
-      var delta = end-start;
-      console.log('processed block in:', delta);
+  else {
+    // We can remove a block from the database as soon as it has been processed
+    Calculation.remove({_id: data.calculation._id}, function() {
       if(callback) {
         callback();
       }
     });
-  });
+  }
 }
 
 function onJoinPool(socket, socketio) {
@@ -161,7 +140,6 @@ function checkWork(callback) {
         else {
           // Reset all state related variables
           currentSearch = search;
-          nth = 1;
           words = new Words.Words(search.alphabet.split(""));
 
           callback();
@@ -178,25 +156,35 @@ function checkWork(callback) {
 }
 
 function registerNewCalculation(client, callback) {
-  var doc = {
-    'session': client,
-    'processing': true,
-    'processed': false,
-    'alphabet': currentSearch.alphabet,
-    'start': words.nth(nth),
-    length: step
-  };
+  //Get current nth from db create a new calculation and update nth
+  SearchModel.findOne(
+    {'_id': currentSearch._id},
+    function(err, search) {
+      var currentIndex = bignum(search.lastIndex);
+      var doc = {
+        'search': currentSearch._id,
+        'session': client,
+        'processing': true,
+        'alphabet': currentSearch.alphabet,
+        'start': words.nth(currentIndex),
+        length: step
+      };
 
-  Calculation.create(doc, function(err, calculation) {
-    if(err) { return handleError(res, err); }
-    var item = {
-      'search': currentSearch.hash,
-      'calculation': calculation
+      search.lastIndex = currentIndex.add(doc.length).toString();
+      search.save();
+
+      Calculation.create(doc, function(err, calculation) {
+        if(err) { return handleError(res, err); }
+
+        var item = {
+          'search': currentSearch.hash,
+          'calculation': calculation
+        };
+
+        callback(item);
+      });
     }
-
-    nth += doc.length;
-    callback(item);
-  });
+  );
 }
 
 function assignCalculation(client, calculation, callback) {
@@ -222,7 +210,6 @@ function assignCalculation(client, calculation, callback) {
 // processed yet.
 function getDbCalculation(callback) {
   var query = Calculation.where({
-    'processed': false,
     'processing': false
   });
 
@@ -259,10 +246,7 @@ function onGetWork(socket) {
   checkWork(function() {
     distributeCalculation(socket, function(calculation){
       if(calculation) {
-        end = new Date().getTime();
-        var delta = end - start;
-
-        console.log(socket.id, '- got new chunk:', calculation.calculation._id, delta);
+        console.log(socket.id, '- got new chunk:', calculation.calculation._id);
         socket.emit('work', calculation);
       }
       else {
