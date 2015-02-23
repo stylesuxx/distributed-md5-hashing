@@ -119,8 +119,6 @@ function onDeliverWork(socket, socketio, data, callback) {
 
   // We can remove a block from the database as soon as it has been processed
   Calculation.remove({_id: data.calculation._id}, function() {
-    console.log('Removed calculation, calling callback');
-
     if(callback) {
       callback();
     }
@@ -166,6 +164,7 @@ function checkWork(callback) {
 
 function registerNewCalculation(client, callback) {
   var doc = {
+    'search': currentSearch._id,
     'session': client,
     'processing': true,
     'processed': false,
