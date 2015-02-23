@@ -36,6 +36,10 @@ var SearchSchema = new Schema({
     required: true
   },
   solution: String,
+  lastIndex: {
+    type: String,
+    default: ""
+  },
   processed: {
     type: Boolean,
     default: false
