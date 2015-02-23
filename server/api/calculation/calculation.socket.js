@@ -29,10 +29,6 @@ var removeAllCalculations = function(callback) {
   Calculation.remove(callback);
 }
 
-removeAllCalculations(function() {
-  console.log('Removed all calculations.');
-});
-
 var hashFound = function() {}
 
 var registerHandlers = function(socket, socketio) {
