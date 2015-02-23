@@ -6,7 +6,6 @@ var mongoose = require('mongoose'),
 var CalculationSchema = new Schema({
   session: String,
   processing: Boolean,
-  processed: Boolean,
   alphabet: String,
   start: String,
   length: Number

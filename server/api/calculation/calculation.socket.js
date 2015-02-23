@@ -117,25 +117,14 @@ function onDeliverWork(socket, socketio, data, callback) {
     });
   }
 
-  // We update the calculation this is important for as long as the
-  // same hash is being cracked - this gives us the possibility to redistribute
-  // blocks where the client left before transmitting his block.
-  Calculation.findById(data.calculation._id, function (err, result) {
-    if(!result) {
-      console.log(socket.id, '- submitted legacy chunk.');
-    }
-    else {
-      data.calculation.processed = true;
-      data.calculation.processing = false;
+  // We can remove a block from the database as soon as it has been processed
+  Calculation.remove({_id: data.calculation._id}, function() {
+    console.log('Removed calculation, calling callback');
 
-      var updated = _.merge(result, data.calculation);
-      updated.save();
+    if(callback) {
+      callback();
     }
   });
-
-  if(callback) {
-    callback();
-  }
 }
 
 function onJoinPool(socket, socketio) {
