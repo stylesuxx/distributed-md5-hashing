@@ -6,16 +6,22 @@ header#banner.hero-unit
       .row.form-group
         label.control-label(for="hash").col-sm-2 MD5 Hash
         .col-sm-6
-          input.form-control(type="text" name="hash" ng-model="search.hash")
+          input.form-control(ng-blur="checkHash()" type="text" name="hash" ng-model="search.hash" placeholder="DEADBEEFCAFEBABEBADC0DEDDEAD")
+          span.pull-left(style="color:red" ng-show="!search.hashValid").
+            Not a valid MD5 hash
 
         label.control-label(for="maxLength").col-sm-2 maximum word length
         .col-sm-2
-          input.form-control(type="number" name="maxLength" ng-model="search.maxLength")
+          input.form-control(ng-blur="checkMaxLength()" ng-model-options="{updateOn: 'default blur'}" type="number" name="maxLength" ng-model="search.maxLength")
+          span.pull-left(style="color:red" ng-show="!search.maxLengthValid").
+            Max Length: 1 - 32
 
       .row.form-group
         label.control-label(for="alphabet").col-sm-2 Alphabet
         .col-sm-10
-          input.form-control(ng-model="search.alphabet" type="text" name="alphabet")
+          input.form-control(ng-blur="checkAlphabetLength()" ng-model="search.alphabet" type="text" name="alphabet")
+          span.pull-left(style="color:red" ng-show="!search.alphabetValid").
+            The alphabet has to be longer than 0 characters.
 
       .row
         .col-sm-12
