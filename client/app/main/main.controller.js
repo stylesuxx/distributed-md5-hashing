@@ -55,7 +55,7 @@ var increaseString = function(string, alphabet) {
 };
 
 angular.module('distributedMd5App')
-  .controller('MainCtrl', function ($scope, $timeout, $interval, $http, socket) {
+  .controller('MainCtrl', function ($scope, $timeout, $interval, $http, socket, $cookies) {
     $scope.joined = false;
     $scope.processing = false;
 
@@ -250,6 +250,7 @@ angular.module('distributedMd5App')
         $scope.joined = true;
         socket.socket.emit('joinPool');
         $scope.start = new Date().getTime();
+        $cookies.reJoin = true;
 
         $interval(function() {
           if($scope.joined && !$scope.processing) {
@@ -264,6 +265,7 @@ angular.module('distributedMd5App')
       $scope.joined = false;
       $scope.processing = false;
       $scope.work.progress = 0;
+      $cookies.reJoin = false;
 
       socket.socket.emit('leavePool');
     };
@@ -346,6 +348,12 @@ angular.module('distributedMd5App')
             });
           });
       }
+    }
+
+    // Automatically rejoin the pool after a reload or when again visiting the
+    // site.
+    if($cookies.reJoin) {
+      $scope.joinPool();
     }
 
     $scope.$on('$destroy', function () {
