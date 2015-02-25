@@ -352,7 +352,7 @@ angular.module('distributedMd5App')
 
     // Automatically rejoin the pool after a reload or when again visiting the
     // site.
-    if($cookies.reJoin) {
+    if($cookies.reJoin && $cookies.reJoin == "true") {
       $scope.joinPool();
     }
 
