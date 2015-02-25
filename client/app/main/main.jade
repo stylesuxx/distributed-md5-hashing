@@ -3,29 +3,31 @@ div(ng-include='"components/navbar/navbar.html"')
 header#banner.hero-unit
   .container
     form.form-horizontal
-      .row.form-group
-        label.control-label(for="hash").col-sm-2 MD5 Hash
-        .col-sm-6
+      .row.form-group.no-bottom.text-left
+        label.control-label(for="hash").col.col-sm-2 MD5 Hash
+        .col-sm-6.col
           input.form-control(ng-blur="checkHash()" type="text" name="hash" ng-model="search.hash" placeholder="DEADBEEFCAFEBABEBADC0DEDDEAD")
           span.pull-left(style="color:red" ng-show="!search.hashValid").
             Not a valid MD5 hash
+          .clearfix
 
-        label.control-label(for="maxLength").col-sm-2 maximum word length
-        .col-sm-2
+        label.control-label(for="maxLength").col-sm-2.col max length
+        .col-sm-2.col
           input.form-control(ng-blur="checkMaxLength()" ng-model-options="{updateOn: 'default blur'}" type="number" name="maxLength" ng-model="search.maxLength")
           span.pull-left(style="color:red" ng-show="!search.maxLengthValid").
             Max Length: 1 - 32
+          .clearfix
 
-      .row.form-group
-        label.control-label(for="alphabet").col-sm-2 Alphabet
-        .col-sm-10
+      .row.text-left
+        label.control-label.text-left(for="alphabet").col-sm-2 Alphabet
+        .col-sm-8.col
           input.form-control(ng-blur="checkAlphabetLength()" ng-model="search.alphabet" type="text" name="alphabet")
           span.pull-left(style="color:red" ng-show="!search.alphabetValid").
             The alphabet has to be longer than 0 characters.
+          .clearfix
 
-      .row
-        .col-sm-12
-          button.btn.btn-default.pull-right(type="submit" ng-click="addSearch()") Add to Queue
+        .col-sm-2.col
+          button.container-fluid.btn.btn-block.btn-success.btn-default(type="submit" ng-click="addSearch()") Submit
 
 .container
   .row
@@ -90,9 +92,9 @@ header#banner.hero-unit
   .row
     .col-lg-6
       h3 Queue
-      ul
-        li(ng-repeat="(key, value) in searchStats.next")
-          div
+      table.table.table-striped
+        tr(ng-repeat="(key, value) in searchStats.next")
+          td
             strong {{value.hash}}
             |  ({{value.alphabet}})
 
