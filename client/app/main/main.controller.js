@@ -302,6 +302,10 @@ angular.module('distributedMd5App')
         'maxLength': $scope.search.maxLength
       };
 
+      $scope.checkAlphabetLength();
+      $scope.checkMaxLength();
+      $scope.checkHash();
+
       if($scope.search.maxLengthValid && $scope.search.alphabetValid && $scope.search.hashValid) {
         $http.post('/api/searches', search)
           .success(function(data, status, headers, config) {
