@@ -96,17 +96,17 @@ header#banner.hero-unit
         tr(ng-repeat="(key, value) in searchStats.next")
           td
             strong {{value.hash}}
-            |  ({{value.alphabet}})
+            | &nbsp;({{value.alphabet}})
 
     .col-lg-6
       h3 Last found
-      ul
-        li(ng-repeat="(key, value) in searchStats.last")
-          div
+      table.table.table-striped
+        tr(ng-repeat="(key, value) in searchStats.last")
+          td
             | md5(
             strong {{value.solution}}
             | )
-            |  = {{value.hash}}
+            | &nbsp;=&nbsp;{{value.hash}}
 
 footer.footer
   .container
