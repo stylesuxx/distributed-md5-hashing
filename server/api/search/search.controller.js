@@ -29,9 +29,9 @@ exports.getSearch = function(callback) {
 // Updates an existing search in the DB.
 exports.updateSearch = function(search, callback) {
   Search.findById(search.id, function (err, result) {
-    //if (err) { return handleError(res, err); }
     if(!result) {
       console.log(err);
+      callback();
     }
     var updated = _.merge(result, search);
     updated.save(function (err) {
