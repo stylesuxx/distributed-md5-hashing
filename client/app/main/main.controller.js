@@ -2,6 +2,7 @@
 
 var calculateHash = function(string) {
   var md5 = new Hashes.MD5().hex(string);
+
   return md5;
 };
 
@@ -26,6 +27,7 @@ var increaseString = function(string, alphabet) {
       if (current == 0) {
         data.unshift(0);
         overflow = false;
+
         break;
       }
       current--;
@@ -55,21 +57,20 @@ var increaseString = function(string, alphabet) {
 };
 
 angular.module('distributedMd5App')
-  .controller('MainCtrl', function ($scope, $timeout, $interval, $http, socket) {
+  .controller('MainCtrl', function ($scope, $timeout, $interval, $http, socket, $cookies) {
     $scope.joined = false;
     $scope.processing = false;
-
-    $scope.form = {
-      'invalidHash': true
-    }
 
     $scope.search = {
       'hashDefault': '',
       'hash': '',
+      'hashValid': true,
       'maxLengthDefault': 6,
       'maxLength': 6,
+      'maxLengthValid': true,
       'alphabetDefault': '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-      'alphabet': '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      'alphabet': '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      'alphabetValid': true
     };
 
     $scope.clients = {
@@ -94,7 +95,6 @@ angular.module('distributedMd5App')
     socket.socket.emit('getSearchStats');
 
     socket.socket.on('noWork', function() {
-      console.log('no work available');
       $scope.processing = false;
     });
 
@@ -247,6 +247,7 @@ angular.module('distributedMd5App')
         $scope.joined = true;
         socket.socket.emit('joinPool');
         $scope.start = new Date().getTime();
+        $cookies.reJoin = true;
 
         $interval(function() {
           if($scope.joined && !$scope.processing) {
@@ -261,9 +262,37 @@ angular.module('distributedMd5App')
       $scope.joined = false;
       $scope.processing = false;
       $scope.work.progress = 0;
+      $cookies.reJoin = false;
 
       socket.socket.emit('leavePool');
-    }
+    };
+
+    $scope.checkAlphabetLength = function() {
+      $scope.search.alphabetValid = ($scope.search.alphabet.length > 0);
+    };
+
+    $scope.checkMaxLength = function() {
+      $scope.search.maxLengthValid = ($scope.search.maxLength > 0 && $scope.search.maxLength < 33);
+    };
+
+    $scope.checkHash = function() {
+      var hash = $scope.search.hash;
+      var valid = "0123456789abcdefABCDEF";
+      valid = valid.split("");
+      $scope.search.hashValid = true;
+
+      if(hash.length != 32) {
+        $scope.search.hashValid = false;
+      }
+      else {
+        for(var i = 0, len = hash.length; i < len; i++) {
+          if(valid.indexOf($scope.search.hash[i]) < 0) {
+            $scope.search.hashValid = false;
+            break;
+          }
+        }
+      }
+    };
 
     $scope.addSearch = function() {
       var search = {
@@ -272,44 +301,56 @@ angular.module('distributedMd5App')
         'maxLength': $scope.search.maxLength
       };
 
-      $http.post('/api/searches', search)
-        .success(function(data, status, headers, config) {
-          $scope.search.hash = $scope.search.hashDefault;
-          $scope.search.alphabet = $scope.search.alphabetDefault;
-          $scope.search.maxLength = $scope.search.maxLengthDefault;
+      $scope.checkAlphabetLength();
+      $scope.checkMaxLength();
+      $scope.checkHash();
 
-          $scope.joinPool();
+      if($scope.search.maxLengthValid && $scope.search.alphabetValid && $scope.search.hashValid) {
+        $http.post('/api/searches', search)
+          .success(function(data, status, headers, config) {
+            $scope.search.hash = $scope.search.hashDefault;
+            $scope.search.alphabet = $scope.search.alphabetDefault;
+            $scope.search.maxLength = $scope.search.maxLengthDefault;
 
-          noty({
-              layout: 'topRight',
-              type: 'success',
-              theme: 'bootstrapTheme',
-              text: 'Successfully added hash to queue!',
-              timeout: 5000,
-              animation: {
-                  open: 'animated bounceInRight', // Animate.css class names
-                  close: 'animated bounceOutRight', // Animate.css class names
-                  easing: 'swing', // unavailable - no need
-                  speed: 500 // unavailable - no need
-              }
+            $scope.joinPool();
+
+            noty({
+                layout: 'topRight',
+                type: 'success',
+                theme: 'bootstrapTheme',
+                text: 'Successfully added hash to queue!',
+                timeout: 5000,
+                animation: {
+                    open: 'animated bounceInRight', // Animate.css class names
+                    close: 'animated bounceOutRight', // Animate.css class names
+                    easing: 'swing', // unavailable - no need
+                    speed: 500 // unavailable - no need
+                }
+            });
+          })
+          .error(function(data, status, headers, config) {
+            noty({
+                layout: 'topRight',
+                type: 'error',
+                theme: 'bootstrapTheme',
+                text: 'Could not add hash, verify that it is a MD5 hash!',
+                timeout: 5000,
+                buttons: false,
+                animation: {
+                    open: 'animated bounceInRight', // Animate.css class names
+                    close: 'animated bounceOutRight', // Animate.css class names
+                    easing: 'swing', // unavailable - no need
+                    speed: 500 // unavailable - no need
+                }
+            });
           });
-        })
-        .error(function(data, status, headers, config) {
-          noty({
-              layout: 'topRight',
-              type: 'error',
-              theme: 'bootstrapTheme',
-              text: 'Could not add hash, verify that it is a MD5 hash!',
-              timeout: 5000,
-              buttons: false,
-              animation: {
-                  open: 'animated bounceInRight', // Animate.css class names
-                  close: 'animated bounceOutRight', // Animate.css class names
-                  easing: 'swing', // unavailable - no need
-                  speed: 500 // unavailable - no need
-              }
-          });
-        });
+      }
+    }
+
+    // Automatically rejoin the pool after a reload or when again visiting the
+    // site.
+    if($cookies.reJoin && $cookies.reJoin == "true") {
+      $scope.joinPool();
     }
 
     $scope.$on('$destroy', function () {

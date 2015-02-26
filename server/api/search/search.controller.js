@@ -2,6 +2,12 @@
 
 var _ = require('lodash');
 var Search = require('./search.model');
+var SearchSocket = require('./search.socket');
+var sockets = null;
+
+exports.register = function(socketio) {
+  sockets = socketio;
+}
 
 // get the next search for porcessing which is the first not processed search
 // in the database
@@ -23,9 +29,9 @@ exports.getSearch = function(callback) {
 // Updates an existing search in the DB.
 exports.updateSearch = function(search, callback) {
   Search.findById(search.id, function (err, result) {
-    //if (err) { return handleError(res, err); }
     if(!result) {
       console.log(err);
+      callback();
     }
     var updated = _.merge(result, search);
     updated.save(function (err) {
@@ -53,9 +59,9 @@ exports.show = function(req, res) {
 
 // Creates a new search in the DB.
 exports.create = function(req, res) {
-  //TODO: we need to validate the hash as an md5 hash
   Search.create(req.body, function(err, search) {
     if(err) { return handleError(res, err); }
+    SearchSocket.sendSearchStatsUpdate(sockets);
     return res.json(201, search);
   });
 };

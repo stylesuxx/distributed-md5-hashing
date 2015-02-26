@@ -3,23 +3,31 @@ div(ng-include='"components/navbar/navbar.html"')
 header#banner.hero-unit
   .container
     form.form-horizontal
-      .row.form-group
-        label.control-label(for="hash").col-sm-2 MD5 Hash
-        .col-sm-6
-          input.form-control(type="text" name="hash" ng-model="search.hash")
+      .row.form-group.no-bottom.text-left
+        label.control-label(for="hash").col.col-sm-2 MD5 Hash
+        .col-sm-6.col
+          input.form-control(ng-blur="checkHash()" type="text" name="hash" ng-model="search.hash" placeholder="DEADBEEFCAFEBABEBADC0DEDDEAD")
+          span.pull-left(style="color:red" ng-show="!search.hashValid").
+            Not a valid MD5 hash
+          .clearfix
 
-        label.control-label(for="maxLength").col-sm-2 maximum word length
-        .col-sm-2
-          input.form-control(type="number" name="maxLength" ng-model="search.maxLength")
+        label.control-label(for="maxLength").col-sm-2.col max length
+        .col-sm-2.col
+          input.form-control(ng-blur="checkMaxLength()" ng-model-options="{updateOn: 'default blur'}" type="number" name="maxLength" ng-model="search.maxLength")
+          span.pull-left(style="color:red" ng-show="!search.maxLengthValid").
+            Max Length: 1 - 32
+          .clearfix
 
-      .row.form-group
-        label.control-label(for="alphabet").col-sm-2 Alphabet
-        .col-sm-10
-          input.form-control(ng-model="search.alphabet" type="text" name="alphabet")
+      .row.text-left
+        label.control-label.text-left(for="alphabet").col-sm-2 Alphabet
+        .col-sm-8.col
+          input.form-control(ng-blur="checkAlphabetLength()" ng-model="search.alphabet" type="text" name="alphabet")
+          span.pull-left(style="color:red" ng-show="!search.alphabetValid").
+            The alphabet has to be longer than 0 characters.
+          .clearfix
 
-      .row
-        .col-sm-12
-          button.btn.btn-default.pull-right(type="submit" ng-click="addSearch()") Add to Queue
+        .col-sm-2.col
+          button.container-fluid.btn.btn-block.btn-success.btn-default(type="submit" ng-click="addSearch()") Submit
 
 .container
   .row
@@ -33,16 +41,16 @@ header#banner.hero-unit
 
     .col-lg-9
       strong {{clients.working}}
-      |  / {{clients.connected}}
+      |&nbsp;/&nbsp;{{clients.connected}}
 
   .row(ng-show="processing" ng-class="ng-hide")
     .col-lg-3
       strong.
         Cracking hash
 
-    .col-lg-9
+    .col-lg-9.alphabet
       strong {{work.search}}
-      |  ({{calculation.alphabet}})
+      |&nbsp;({{calculation.alphabet}})
 
   .row(ng-show="joined" ng-class="ng-hide")
     .col-lg-3
@@ -51,8 +59,8 @@ header#banner.hero-unit
 
     .col-lg-9
       .calculating(ng-show="!transmitting && processing" ng-class="ng-hide")
-        | Calculating hash for
-        strong   {{work.currentWord}}
+        | Calculating hash for&nbsp;
+        strong {{work.currentWord}}
 
       .transmitting(ng-show="transmitting && processing" ng-class="ng-hide")
         .text.
@@ -84,27 +92,27 @@ header#banner.hero-unit
   .row
     .col-lg-6
       h3 Queue
-      ul
-        li(ng-repeat="(key, value) in searchStats.next")
-          div
+      table.table.table-striped
+        tr(ng-repeat="(key, value) in searchStats.next")
+          td
             strong {{value.hash}}
-            |  ({{value.alphabet}})
+            | &nbsp;({{value.alphabet}})
 
     .col-lg-6
       h3 Last found
-      ul
-        li(ng-repeat="(key, value) in searchStats.last")
-          div
+      table.table.table-striped
+        tr(ng-repeat="(key, value) in searchStats.last")
+          td
             | md5(
             strong {{value.solution}}
             | )
-            |  = {{value.hash}}
+            | &nbsp;=&nbsp;{{value.hash}}
 
 footer.footer
   .container
     p
-      | Distributed MD5 cracking
+      | Distributed MD5 hashing
       = ' | '
       a(href='https://twitter.com/stylesuxx') @stylesuxx
       = ' | '
-      a(href='https://github.com/DaftMonk/generator-angular-fullstack/issues?state=open') Issues
+      a(href='https://github.com/stylesuxx/distributed-md5-hashing/issues?state=open') Issues
