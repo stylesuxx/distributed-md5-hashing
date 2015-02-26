@@ -3,8 +3,6 @@
 var _ = require('lodash');
 var Calculation = require('./calculation.model');
 
-//TODO: clear all calculations on a restart reset processing and session
-
 // Get list of calculations
 exports.index = function(req, res) {
   Calculation.find(function (err, calculations) {
