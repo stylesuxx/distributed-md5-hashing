@@ -2,6 +2,7 @@
 
 var calculateHash = function(string) {
   var md5 = new Hashes.MD5().hex(string);
+
   return md5;
 };
 
@@ -26,6 +27,7 @@ var increaseString = function(string, alphabet) {
       if (current == 0) {
         data.unshift(0);
         overflow = false;
+
         break;
       }
       current--;
@@ -58,10 +60,6 @@ angular.module('distributedMd5App')
   .controller('MainCtrl', function ($scope, $timeout, $interval, $http, socket, $cookies) {
     $scope.joined = false;
     $scope.processing = false;
-
-    $scope.form = {
-      'invalidHash': true
-    }
 
     $scope.search = {
       'hashDefault': '',
@@ -97,7 +95,6 @@ angular.module('distributedMd5App')
     socket.socket.emit('getSearchStats');
 
     socket.socket.on('noWork', function() {
-      console.log('no work available');
       $scope.processing = false;
     });
 
