@@ -43,6 +43,24 @@ header#banner.hero-unit
       strong {{clients.working}}
       |&nbsp;/&nbsp;{{clients.connected}}
 
+  .row(ng-hide="processing" ng-class="ng-hide")
+    .col-lg-12
+      .alert.alert-info
+        p
+          strong Disclaimer:&nbsp;
+          | Joining the hashing pool may cause your browser to crash or freeze.
+          | Calculating hashes is a cpu intense task, so be prepared that your
+          | cpu load goes up.
+        p
+          | Chrome, Opera and Safari should be safe. Firefox seems
+          | to calculate fine, but tends freeze. IE tends to crash.
+        p
+          strong Hint:&nbsp;
+          | If your browser does not behave as expected, you may choose to use
+          | the classic setTimeout functin between calculations by checking the
+          | box below. This should work in most browsers, but about 40 times
+          | slower than with a browser mentioned above.
+
   .row(ng-show="processing" ng-class="ng-hide")
     .col-lg-3
       strong.
@@ -84,7 +102,13 @@ header#banner.hero-unit
           {{work.progress}}%
 
   .row
-    form.col-lg-12
+    .col-lg-8
+    .col-lg-2
+      .checkbox
+        label
+          input(type="checkbox" ng-model="manualTimeout")
+          | Use setTimeout
+    col-lg-2
       .input-group.pull-right
         button.btn.btn-primary(type='submit', ng-click='joinPool()' ng-hide="joined" class="ng-hide") Join Hashing Pool
         button.btn.btn-primary(type='submit', ng-click='leavePool()' ng-show="joined" class="ng-hide") Leave Hashing Pool

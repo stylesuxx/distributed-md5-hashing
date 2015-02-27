@@ -60,6 +60,8 @@ angular.module('distributedMd5App')
   .controller('MainCtrl', function ($scope, $timeout, $interval, $http, socket, $cookies) {
     $scope.joined = false;
     $scope.processing = false;
+    $scope.manualTimeout = false;
+    $scope.timeout = 0;
 
     $scope.search = {
       'hashDefault': '',
@@ -173,7 +175,12 @@ angular.module('distributedMd5App')
           else {
             if($scope.joined) {
               word = increaseString(word, alphabet);
-              setZeroTimeout(processItemZero, 0);
+              if($scope.manualTimeout) {
+                setTimeout(processItemZero, $scope.timeout);
+              }
+              else {
+                setZeroTimeout(processItemZero, 0);
+              }
             }
           }
         }
